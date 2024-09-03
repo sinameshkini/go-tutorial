@@ -63,10 +63,7 @@ func (h *AuthHandler) SignIn(c echo.Context) error {
 
 func (h *AuthHandler) ResetPassword(c echo.Context) error {
 	var email string
-	fmt.Println("hello")
-	err := c.Bind(&email)
-	fmt.Println(err)
-	if err != nil {
+	if err := c.Bind(&email); err != nil {
 		return echo.ErrBadRequest
 	}
 
