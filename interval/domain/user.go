@@ -1,6 +1,9 @@
 package domain
 
-type User struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+import "gorm.io/gorm"
+
+type UserModel struct {
+	gorm.Model
+	Email    string
+	Password string
 }

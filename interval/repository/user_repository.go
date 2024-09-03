@@ -8,12 +8,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserModel struct {
-	gorm.Model
-	Email    string
-	Password string
-}
-
 type UserRepository struct {
 	db *gorm.DB
 }
@@ -24,21 +18,18 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 
 func StartDB() (*gorm.DB, error) {
 	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+	db.AutoMigrate(&domain.UserModel{})
 	return db, err
 }
 
-func (repo *UserRepository) Migration() {
-	repo.db.AutoMigrate(&UserModel{})
-}
-
-func (repo *UserRepository) AddUser(user *domain.User) error {
-	newUser := UserModel{Email: user.Email, Password: user.Password}
+func (repo *UserRepository) AddUser(user *domain.UserModel) error {
+	newUser := domain.UserModel{Email: user.Email, Password: user.Password}
 	err := repo.db.Create(&newUser).Error
 	return err
 }
 
-func (repo *UserRepository) FindUser(email string) (*UserModel, error) {
-	var userModel UserModel
+func (repo *UserRepository) FindUser(email string) (*domain.UserModel, error) {
+	var userModel domain.UserModel
 	result := repo.db.Where("email = ?", email).First(&userModel)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
