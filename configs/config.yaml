@@ -1,0 +1,16 @@
+server:
+  port: 8080
+
+database:
+  host: localhost
+  port: 5432
+  user: user
+  password: password
+  dbname: go_tutorial
+
+jwt:
+  secret_key: your-secret-key
+  token_expiration: 3600  # Token expiration in seconds
+
+log:
+  level: info
