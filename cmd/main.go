@@ -1,8 +1,11 @@
 package main
 
 import (
-	handler "gu_tutorial/interval/delivery/http"
-	"gu_tutorial/interval/repository"
+	handler "go_tutorial/internal/delivery/http"
+	"go_tutorial/internal/repository"
+	"go_tutorial/internal/usecase"
+	"go_tutorial/pkg/config"
+	"go_tutorial/pkg/database"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -11,11 +14,34 @@ import (
 )
 
 func main() {
-	db, err := repository.StartDB()
-	if err != nil {
-		panic(err)
+	// TODO read config from configs/config.yaml by Viper
+	conf := config.Config{
+		Server: config.Server{
+			Address: ":8080",
+		},
+		Database: database.Config{
+			Host:     "localhost",
+			Port:     "5432",
+			User:     "user",
+			Password: "password",
+			DBName:   "go_tutorial",
+			Debug:    true,
+		},
 	}
-	userRepository := repository.NewUserRepository(db)
+
+	db, err := database.New(conf.Database)
+	if err != nil {
+		logrus.Fatalln("error connecting to database", err.Error())
+	}
+
+	if err = database.Migrate(db); err != nil {
+		logrus.Errorln("error migrating database", err.Error())
+	}
+
+	repo := repository.NewUserRepository(db)
+
+	uc := usecase.New(repo)
+
 	e := echo.New()
 
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
@@ -31,11 +57,9 @@ func main() {
 		},
 	}))
 
-	authHandler := handler.NewAuthHandler(*userRepository)
+	g := e.Group("/api/v1")
 
-	e.POST("/auth/signup", authHandler.SignUp)
-	e.POST("/auth/signin", authHandler.SignIn)
-	e.POST("/auth/reset-password", authHandler.ResetPassword)
+	handler.Init(g, uc)
 
-	e.Logger.Fatal(e.Start(":1323"))
+	logrus.Fatalln(e.Start(conf.Server.Address))
 }

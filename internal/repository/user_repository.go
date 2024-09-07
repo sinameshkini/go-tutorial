@@ -2,9 +2,8 @@ package repository
 
 import (
 	"errors"
-	"gu_tutorial/interval/domain"
+	"go_tutorial/internal/domain"
 
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -16,20 +15,14 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
 
-func StartDB() (*gorm.DB, error) {
-	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
-	db.AutoMigrate(&domain.UserModel{})
-	return db, err
-}
-
-func (repo *UserRepository) AddUser(user *domain.UserModel) error {
-	newUser := domain.UserModel{Email: user.Email, Password: user.Password}
+func (repo *UserRepository) AddUser(user *domain.User) error {
+	newUser := domain.User{Email: user.Email, Password: user.Password}
 	err := repo.db.Create(&newUser).Error
 	return err
 }
 
-func (repo *UserRepository) FindUser(email string) (*domain.UserModel, error) {
-	var userModel domain.UserModel
+func (repo *UserRepository) FindUser(email string) (*domain.User, error) {
+	var userModel domain.User
 	result := repo.db.Where("email = ?", email).First(&userModel)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {

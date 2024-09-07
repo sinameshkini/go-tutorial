@@ -2,7 +2,7 @@ package domain
 
 import "gorm.io/gorm"
 
-type UserModel struct {
+type User struct {
 	gorm.Model
 	Email    string
 	Password string

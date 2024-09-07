@@ -1,0 +1,12 @@
+services:
+  database:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=go_tutorial
+    ports:
+      - "5432:5432"
+    volumes:
+      - ../go-tutorial-volume/database:/var/lib/postgresql/data
