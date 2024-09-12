@@ -1,12 +1,14 @@
 package database
 
 import (
-	"fmt"
+	//"fmt"
 	"log"
 	"os"
 	"time"
 
-	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
+
+	//"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
@@ -25,13 +27,13 @@ type Config struct {
 // New ...
 func New(conf Config) (db *gorm.DB, err error) {
 	// DSN (Data Source Name) without the database name for initial connection
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s",
-		conf.Host,
-		conf.User,
-		conf.Password,
-		conf.DBName,
-		conf.Port,
-	)
+	//dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s",
+	//	conf.Host,
+	//	conf.User,
+	//	conf.Password,
+	//	conf.DBName,
+	//	conf.Port,
+	//)
 
 	var newLogger logger.Interface
 	if conf.Debug {
@@ -46,7 +48,7 @@ func New(conf Config) (db *gorm.DB, err error) {
 	}
 
 	// Open the initial connection
-	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
+	db, err = gorm.Open(sqlite.Open("gorm.db"), &gorm.Config{
 		Logger: newLogger,
 	})
 	if err != nil {

@@ -22,7 +22,7 @@ func (u *AuthUsecase) SignUp(email string, password string) (err error) {
 		return err
 	}
 	if usr != nil {
-		return errors.New("Email already exists")
+		return errors.New("email already exists")
 	}
 
 	err = u.repo.AddUser(&domain.User{
@@ -35,4 +35,34 @@ func (u *AuthUsecase) SignUp(email string, password string) (err error) {
 	return
 }
 
-// TODO impl other methods here ...
+func (u *AuthUsecase) SignIn(email string, password string) (err error) {
+	usr, err := u.repo.FindUser(email)
+	if err != nil {
+		return err
+	}
+	if usr == nil {
+		return errors.New("user not found")
+	}
+
+	if usr.Password != password {
+		return errors.New("password doesn't match")
+	}
+	return nil
+}
+
+func (u *AuthUsecase) ResetPassowrd(email string) (err error) {
+	usr, err := u.repo.FindUser(email)
+	if err != nil {
+		return err
+	}
+	if usr == nil {
+		return errors.New("user not found")
+	}
+
+	newPass := "12ahfhu259"
+	if err := u.repo.ResetPassword(usr.Email, newPass); err != nil {
+		return err
+	}
+
+	return
+}

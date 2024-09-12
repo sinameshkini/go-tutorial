@@ -16,11 +16,8 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 }
 
 func (repo *UserRepository) AddUser(user *domain.User) error {
-	newUser := domain.User{Email: user.Email, Password: user.Password}
-	err := repo.db.Create(&newUser).Error
-	return err
+	return repo.db.Create(user).Error
 }
-
 func (repo *UserRepository) FindUser(email string) (*domain.User, error) {
 	var userModel domain.User
 	result := repo.db.Where("email = ?", email).First(&userModel)
@@ -31,4 +28,14 @@ func (repo *UserRepository) FindUser(email string) (*domain.User, error) {
 		return nil, result.Error
 	}
 	return &userModel, nil
+}
+
+func (repo *UserRepository) ResetPassword(email string, newPassword string) error {
+	var user domain.User
+	if err := repo.db.Where("email = ?", email).First(&user).Error; err != nil {
+		return err
+	}
+
+	user.Password = newPassword
+	return repo.db.Save(&user).Error
 }
