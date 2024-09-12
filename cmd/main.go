@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	handler "go_tutorial/internal/delivery/http"
 	"go_tutorial/internal/repository"
 	"go_tutorial/internal/usecase"
@@ -9,22 +10,22 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 func main() {
-	// TODO read config from configs/config.yaml by Viper
-	conf := config.Config{
-		Server: config.Server{
-			Address: ":8080",
-		},
-		Database: database.Config{
-			Host:     "localhost",
-			Port:     "5432",
-			User:     "user",
-			Password: "password",
-			DBName:   "go_tutorial",
-			Debug:    true,
-		},
+	viper.AddConfigPath("./configs")
+	viper.SetConfigName("config")
+
+	if err := viper.ReadInConfig(); err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	var conf config.Config
+	if err := viper.Unmarshal(&conf); err != nil {
+		fmt.Println(err)
+		return
 	}
 
 	db, err := database.New(conf.Database)

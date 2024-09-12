@@ -60,10 +60,10 @@ func (h *handler) ResetPassword(c echo.Context) error {
 	if err := c.Bind(&email); err != nil {
 		return echo.ErrBadRequest
 	}
-
-	if err := h.usecase.ResetPassowrd(email.Email); err != nil {
+	var newPass, err = h.usecase.ResetPassowrd(email.Email)
+	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, "Email sent with reset instructions")
+	return c.JSON(http.StatusOK, fmt.Sprintf("your new password is : %s", newPass))
 }

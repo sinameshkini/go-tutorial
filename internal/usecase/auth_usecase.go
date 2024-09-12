@@ -4,6 +4,7 @@ import (
 	"errors"
 	"go_tutorial/internal/domain"
 	"go_tutorial/internal/repository"
+	"math/rand"
 )
 
 type AuthUsecase struct {
@@ -50,19 +51,32 @@ func (u *AuthUsecase) SignIn(email string, password string) (err error) {
 	return nil
 }
 
-func (u *AuthUsecase) ResetPassowrd(email string) (err error) {
+func (u *AuthUsecase) ResetPassowrd(email string) (newpass string, err error) {
+	var newPass string
 	usr, err := u.repo.FindUser(email)
 	if err != nil {
-		return err
+		return newPass, err
 	}
 	if usr == nil {
-		return errors.New("user not found")
+		return newPass, errors.New("user not found")
 	}
 
-	newPass := "12ahfhu259"
+	newPass = generateRandomPassword(12)
 	if err := u.repo.ResetPassword(usr.Email, newPass); err != nil {
-		return err
+		return newPass, err
 	}
 
-	return
+	return newPass, err
+}
+
+func generateRandomPassword(lengh int) string {
+	var charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	var passowrd []byte
+
+	for i := 0; i <= lengh; i++ {
+		passowrd = append(passowrd, charset[rand.Intn(len(charset))])
+	}
+
+	return string(passowrd)
+
 }
