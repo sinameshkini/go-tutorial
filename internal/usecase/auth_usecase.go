@@ -5,6 +5,8 @@ import (
 	"go_tutorial/internal/domain"
 	"go_tutorial/internal/repository"
 	"math/rand"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthUsecase struct {
@@ -18,6 +20,7 @@ func New(repo *repository.UserRepository) *AuthUsecase {
 }
 
 func (u *AuthUsecase) SignUp(email string, password string) (err error) {
+	//trying to check if the user already exists
 	usr, err := u.repo.FindUser(email)
 	if err != nil {
 		return err
@@ -26,9 +29,16 @@ func (u *AuthUsecase) SignUp(email string, password string) (err error) {
 		return errors.New("email already exists")
 	}
 
+	//hashing passowrd for storing
+	hashedPassowrd, err := HashPassword(password)
+	if err != nil {
+		return errors.New("error while hashing passowrd")
+	}
+
+	//adding to the database
 	err = u.repo.AddUser(&domain.User{
 		Email:    email,
-		Password: password,
+		Password: hashedPassowrd,
 	})
 	if err != nil {
 		return err
@@ -37,6 +47,7 @@ func (u *AuthUsecase) SignUp(email string, password string) (err error) {
 }
 
 func (u *AuthUsecase) SignIn(email string, password string) (err error) {
+	//checking if the user exists
 	usr, err := u.repo.FindUser(email)
 	if err != nil {
 		return err
@@ -45,14 +56,18 @@ func (u *AuthUsecase) SignIn(email string, password string) (err error) {
 		return errors.New("user not found")
 	}
 
-	if usr.Password != password {
+	//checking if the hashed password and real password match
+	if !CheckPasswordHash(password, usr.Password) {
 		return errors.New("password doesn't match")
 	}
 	return nil
 }
 
 func (u *AuthUsecase) ResetPassowrd(email string) (newpass string, err error) {
+
 	var newPass string
+
+	//checking if the user exists
 	usr, err := u.repo.FindUser(email)
 	if err != nil {
 		return newPass, err
@@ -61,7 +76,10 @@ func (u *AuthUsecase) ResetPassowrd(email string) (newpass string, err error) {
 		return newPass, errors.New("user not found")
 	}
 
+	//generating random password
 	newPass = generateRandomPassword(12)
+
+	//trying to change password in db
 	if err := u.repo.ResetPassword(usr.Email, newPass); err != nil {
 		return newPass, err
 	}
@@ -71,12 +89,19 @@ func (u *AuthUsecase) ResetPassowrd(email string) (newpass string, err error) {
 
 func generateRandomPassword(lengh int) string {
 	var charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	var passowrd []byte
-
+	var password []byte
 	for i := 0; i <= lengh; i++ {
-		passowrd = append(passowrd, charset[rand.Intn(len(charset))])
+		password = append(password, charset[rand.Intn(len(charset))])
 	}
+	return string(password)
+}
 
-	return string(passowrd)
+func HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(bytes), err
+}
 
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }

@@ -10,3 +10,9 @@ type Config struct {
 type Server struct {
 	Address string
 }
+
+//havent used it yet
+type JWS struct {
+	secret_key       string
+	token_expiration int
+}

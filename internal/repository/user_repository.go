@@ -18,10 +18,12 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 func (repo *UserRepository) AddUser(user *domain.User) error {
 	return repo.db.Create(user).Error
 }
+
 func (repo *UserRepository) FindUser(email string) (*domain.User, error) {
 	var userModel domain.User
 	result := repo.db.Where("email = ?", email).First(&userModel)
 	if result.Error != nil {
+		//if the error shows that there is not one in db, than that shoud not be treated as a error
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}

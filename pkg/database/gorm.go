@@ -35,6 +35,7 @@ func New(conf Config) (db *gorm.DB, err error) {
 	//	conf.Port,
 	//)
 
+	// Logger for db
 	var newLogger logger.Interface
 	if conf.Debug {
 		newLogger = logger.New(
