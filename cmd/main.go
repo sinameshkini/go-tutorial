@@ -55,14 +55,14 @@ func main() {
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {
 			return new(http.JwtCustomClaims)
 		},
-		SigningKey: []byte("secret"),
+		SigningKey: []byte(conf.Jws.Secret_key),
 	}
 	r.Use(echojwt.WithConfig(config))
 
 	g := e.Group("/api/v1")
 
 	//Initializing the handlers
-	handler.Init(g, r, uc)
+	handler.Init(g, r, uc, &conf)
 
 	//Starting the Server
 	logrus.Fatalln(e.Start(conf.Server.Address))

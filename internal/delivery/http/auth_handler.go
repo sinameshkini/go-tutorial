@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go_tutorial/internal/domain"
 	"go_tutorial/internal/usecase"
+	"go_tutorial/pkg/config"
 	"log"
 	"net/http"
 
@@ -15,11 +16,13 @@ import (
 
 type handler struct {
 	usecase *usecase.AuthUsecase
+	config  *config.Config
 }
 
-func Init(g *echo.Group, g2 *echo.Group, uc *usecase.AuthUsecase) {
+func Init(g *echo.Group, g2 *echo.Group, uc *usecase.AuthUsecase, conf *config.Config) {
 	authHandler := handler{
 		usecase: uc,
+		config:  conf,
 	}
 
 	api := g.Group("/auth")
@@ -69,13 +72,13 @@ func (h *handler) SignIn(c echo.Context) error {
 	claims := &JwtCustomClaims{
 		user.Email,
 		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Second * 3600)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Second * time.Duration(h.config.Jws.Token_expiration))),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	//signing using the "secret in config"
 	//plan: load the secret directly from config fie
-	tk, err := token.SignedString([]byte("secret"))
+	tk, err := token.SignedString([]byte(h.config.Jws.Secret_key))
 	if err != nil {
 		return err
 	}
