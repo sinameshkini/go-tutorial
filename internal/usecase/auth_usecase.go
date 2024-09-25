@@ -76,11 +76,16 @@ func (u *AuthUsecase) ResetPassowrd(email string) (newpass string, err error) {
 		return newPass, errors.New("user not found")
 	}
 
-	//generating random password
+	//generating random password and hashing it
 	newPass = generateRandomPassword(12)
+	newHashedPass, err := HashPassword(newPass)
+
+	if err != nil {
+		return newPass, errors.New("error while hashing")
+	}
 
 	//trying to change password in db
-	if err := u.repo.ResetPassword(usr.Email, newPass); err != nil {
+	if err := u.repo.ResetPassword(usr.Email, newHashedPass); err != nil {
 		return newPass, err
 	}
 
